@@ -16,10 +16,12 @@ const Register = async (req, res, next) => {
         .status(400)
         .json(responseFormat(true, "User with given email already exists."));
     }
+    const salt = await bcrypt.genSaltSync(10);
+    const hashedPassword = await bcrypt.hashSync(password, salt);
     const newUser = new user({
       email: email,
       name: name,
-      password: password,
+      password: hashedPassword,
     });
     const savedUser = await newUser.save();
     if (savedUser) {
@@ -91,4 +93,35 @@ const Logout = async (req, res, next) => {
   }
 };
 
-export { Register, Login, Logout };
+const TestRoute = (req, res, next) => {
+  return res.status(200).json(responseFormat(true, "Test successful"));
+};
+
+const RefreshAuthToken = async (req, res, next) => {
+  const token = req.header("Authorization");
+  try {
+    const existingSession = await session.findOne({ token: token });
+
+    if (!existingSession) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authentication token.",
+      });
+    }
+
+    const newToken = crypto.randomBytes(16).toString("base64");
+
+    existingSession.token = newToken;
+    existingSession.createdAt = new Date();
+
+    await existingSession.save();
+
+    res
+      .status(200)
+      .json(responseFormat(true, "Session token refreshed.", newToken));
+  } catch (err) {
+    next(err);
+  }
+};
+
+export { Register, Login, Logout, TestRoute, RefreshAuthToken };

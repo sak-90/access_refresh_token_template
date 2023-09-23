@@ -7,16 +7,5 @@ const userSchema = mongoose.Schema({
   name: { type: String, required: true },
 });
 
-userSchema.pre("save", async (next) => {
-  try {
-    const salt = await genSalt(90);
-    const hashedPassword = await hash(this.password, salt);
-    this.password = hashedPassword;
-    next();
-  } catch (err) {
-    next(err);
-  }
-});
-
 const user = mongoose.model("user", userSchema);
 export default user;

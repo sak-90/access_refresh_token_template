@@ -19,6 +19,17 @@ const authenticateMiddleware = async (req, res, next) => {
         .json(responseFormat(false, "Invalid authentication token."));
     }
 
+    const expirationTime = new Date(existingSession.createdAt);
+    expirationTime.setHours(expirationTime.getHours() + 24);
+
+    // Check if session has expired
+    if (expirationTime < new Date()) {
+      await session.deleteOne({ _id: existingSession._id });
+      return res
+        .status(401)
+        .json(responseFormat(false, "Session has expired."));
+    }
+
     req.userId = existingSession.userId;
     next();
   } catch (err) {
