@@ -70,4 +70,25 @@ const Login = async (req, res, next) => {
   }
 };
 
-export { Register };
+const Logout = async (req, res, next) => {
+  const token = req.header("Authorization");
+
+  try {
+    const existingSession = await session.findOne({ token: token });
+
+    if (!existingSession) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid authentication token.",
+      });
+    }
+
+    await session.deleteOne({ _id: existingSession._id });
+
+    res.status(200).json(responseFormat(true, "Logout successful."));
+  } catch (err) {
+    next(err);
+  }
+};
+
+export { Register, Login, Logout };
