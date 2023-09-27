@@ -1,4 +1,4 @@
-# Pixelwand Backend Assessment
+# NodeJS access refresh token template for authentication
 
 This is a complete authentication api app for users to register, login and includes sample protected route and includes refresh token mechanism.
 
